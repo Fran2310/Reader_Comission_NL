@@ -25,11 +25,23 @@ class TestCommissionsProcessing(unittest.TestCase):
         self.assertEqual(exported_on, "11/23/2026")
         self.assertEqual(list(df.columns), processor.REQUIRED_COLUMNS)
 
+    def test_split_camel_case(self):
+        self.assertEqual(processor.split_camel_case("AlexanderArellano"), "Alexander Arellano")
+        self.assertEqual(processor.split_camel_case("JuanLopez Bravo"), "Juan Lopez Bravo")
+        self.assertEqual(processor.split_camel_case("KarenBaquero"), "Karen Baquero")
+        self.assertEqual(processor.split_camel_case("Arellano,Alexander"), "Arellano, Alexander")
+        self.assertEqual(processor.split_camel_case("Gutierrez,ManuelHernandez"), "Gutierrez, Manuel Hernandez")
+        self.assertEqual(processor.split_camel_case("ALEXANDER ARELLANO"), "ALEXANDER ARELLANO")
+
     def test_name_matching(self):
         # Gutierrez, Manuel Hernandez <-> HERNANDEZ GUTIERREZ MANUEL
         self.assertTrue(processor.names_match("Gutierrez, Manuel Hernandez", "HERNANDEZ GUTIERREZ MANUEL"))
         self.assertTrue(processor.names_match("HERNANDEZ GUTIERREZ MANUEL", "Gutierrez, Manuel Hernandez"))
         self.assertTrue(processor.names_match("Betancourt, Carol", "BETANCOURT CAROL A"))
+        # Prueba con CamelCase pegado en Exported By:
+        self.assertTrue(processor.names_match("AlexanderArellano", "ARELLANO ALEXANDER"))
+        self.assertTrue(processor.names_match("ARELLANO ALEXANDER", "AlexanderArellano"))
+        self.assertTrue(processor.names_match("JuanLopez Bravo", "LOPEZ BRAVO JUAN"))
         self.assertFalse(processor.names_match("Gutierrez, Manuel Hernandez", "ABREU ANABEL"))
         self.assertFalse(processor.names_match("Gutierrez, Manuel Hernandez", "HERRERA YUDEMA"))
 

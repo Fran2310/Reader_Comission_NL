@@ -65,8 +65,9 @@ Reader_Comission_NL/
 
 ### 1. Extracción del Agente Principal
 - El sistema escanea las celdas del archivo Excel en busca de la etiqueta `Exported By:`.
-- Extrae el nombre del agente (por ejemplo: `Gutierrez, Manuel Hernandez`).
-- Implementa una función de **normalización tokenizada** que permite comparar nombres escritos en formato `Apellidos, Nombres` con registros escritos en formato `NOMBRES APELLIDOS` o con variaciones de tildes y mayúsculas/minúsculas.
+- Extrae el nombre del agente (por ejemplo: `Gutierrez, Manuel Hernandez` o `AlexanderArellano`).
+- **Separación de mayúsculas pegadas (CamelCase / PascalCase):** Si el nombre en el Excel viene sin espacios entre palabras (ej. `AlexanderArellano`, `JuanLopez Bravo` o `Arellano,Alexander`), el sistema inserta automáticamente los espacios correspondientes resultando en `Alexander Arellano`, `Juan Lopez Bravo` o `Arellano, Alexander`.
+- **Normalización tokenizada:** Permite comparar sin fallos nombres escritos en formato `Apellidos, Nombres` con registros escritos en formato `NOMBRES APELLIDOS` o con variaciones de tildes y mayúsculas/minúsculas.
 
 ### 2. Unificación de Archivos (1 o 2 archivos `.xlsx`)
 - Si se carga 1 archivo, procesa y genera las salidas para dicho reporte.

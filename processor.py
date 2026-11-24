@@ -27,15 +27,37 @@ REQUIRED_COLUMNS = [
     'Payment Date'
 ]
 
+def split_camel_case(text: str) -> str:
+    """
+    Inserta un espacio si un nombre viene pegado con mayusculas intermedias
+    (formato CamelCase / PascalCase), por ejemplo:
+    'AlexanderArellano' -> 'Alexander Arellano'
+    'JuanLopez Bravo' -> 'Juan Lopez Bravo'
+    'Arellano,Alexander' -> 'Arellano, Alexander'
+    """
+    if not text or pd.isna(text):
+        return ''
+    s = str(text).strip()
+    # Si hay coma sin espacio: 'Arellano,Alexander' -> 'Arellano, Alexander'
+    s = re.sub(r',([^\s])', r', \1', s)
+    # Siglas seguidas de palabra capitalizada (ej. 'NLGAgent' -> 'NLG Agent')
+    s = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1 \2', s)
+    # Minuscula seguida de mayuscula: 'AlexanderArellano' -> 'Alexander Arellano'
+    s = re.sub(r'([a-z])([A-Z])', r'\1 \2', s)
+    # Normalizar espacios multiples
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
 def normalize_name(name: str) -> set:
     """
     Normaliza un nombre eliminando acentos, caracteres especiales,
-    convirtiendo a minusculas y retornando un conjunto de palabras significativas.
+    separando mayusculas pegadas, convirtiendo a minusculas y
+    retornando un conjunto de palabras significativas.
     Permite comparar nombres con orden invertido (Apellidos, Nombres vs Nombres Apellidos).
     """
     if not name or pd.isna(name):
         return set()
-    s = str(name).strip()
+    s = split_camel_case(str(name))
     s = unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore').decode('utf-8')
     tokens = re.findall(r'[a-zA-Z0-9]+', s.lower())
     return set(tokens)
@@ -137,9 +159,9 @@ def extract_excel_data(file_source):
                 if 'Exported By:' in sval:
                     m = re.search(r'Exported By:\s*(.*)', sval, re.IGNORECASE)
                     if m and m.group(1).strip():
-                        exported_by = m.group(1).strip()
+                        exported_by = split_camel_case(m.group(1).strip())
                     elif c_idx + 1 < len(row_vals) and row_vals[c_idx + 1]:
-                        exported_by = str(row_vals[c_idx + 1]).strip()
+                        exported_by = split_camel_case(str(row_vals[c_idx + 1]).strip())
                 if 'Exported On:' in sval:
                     m = re.search(r'Exported On:\s*(.*)', sval, re.IGNORECASE)
                     if m and m.group(1).strip():
